@@ -1,22 +1,23 @@
-import Navbar from "./components/Navbar";
+import { Routes, Route } from "react-router-dom";
+
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
-    <>
-      <Navbar />
+    <Routes>
 
-      <main className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center">
-        <h1 className="text-5xl font-bold">CareerForge AI</h1>
+      <Route path="/" element={<Home />} />
 
-        <p className="mt-4 text-xl text-slate-300">
-          Build your career with AI.
-        </p>
+      <Route path="/login" element={<Login />} />
 
-        <button className="mt-8 rounded-lg bg-blue-600 px-6 py-3 font-semibold hover:bg-blue-700">
-          Get Started
-        </button>
-      </main>
-    </>
+      <Route path="/register" element={<Register />} />
+
+      <Route path="/dashboard" element={<Dashboard />} />
+
+    </Routes>
   );
 }
 
