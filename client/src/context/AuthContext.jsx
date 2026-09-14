@@ -1,100 +1,96 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
 
+const API_URL = "http://localhost:5000/api";
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+
+  useEffect(() => {
     const savedUser = localStorage.getItem("careerforge_user");
+    const savedToken = localStorage.getItem("careerforge_token");
 
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+    if (savedUser && savedToken) {
+      setUser(JSON.parse(savedUser));
+      setToken(savedToken);
+    }
+  }, []);
 
-  const login = (email, password) => {
-    const savedAccount = localStorage.getItem(
-      "careerforge_account"
-    );
+  const login = async (email, password) => {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    });
 
-    if (!savedAccount) {
-      return {
-        success: false,
-        message: "No account found. Please register first.",
-      };
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Login failed");
     }
 
-    const account = JSON.parse(savedAccount);
-
-    if (
-      account.email !== email ||
-      account.password !== password
-    ) {
-      return {
-        success: false,
-        message: "Invalid email or password.",
-      };
-    }
-
-    const loggedInUser = {
-      name: account.name,
-      email: account.email,
-    };
+    setUser(data.user);
+    setToken(data.token);
 
     localStorage.setItem(
       "careerforge_user",
-      JSON.stringify(loggedInUser)
+      JSON.stringify(data.user)
     );
-
-    setUser(loggedInUser);
-
-    return {
-      success: true,
-    };
-  };
-
-  const register = (name, email, password) => {
-    const existingAccount = localStorage.getItem(
-      "careerforge_account"
-    );
-
-    if (existingAccount) {
-      const account = JSON.parse(existingAccount);
-
-      if (account.email === email) {
-        return {
-          success: false,
-          message: "An account with this email already exists.",
-        };
-      }
-    }
-
-    const account = {
-      name,
-      email,
-      password,
-    };
 
     localStorage.setItem(
-      "careerforge_account",
-      JSON.stringify(account)
+      "careerforge_token",
+      data.token
     );
 
-    return {
-      success: true,
-    };
+    return data;
+  };
+
+  const register = async (name, email, password) => {
+    const response = await fetch(`${API_URL}/auth/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Registration failed");
+    }
+
+    return data;
   };
 
   const logout = () => {
-    localStorage.removeItem("careerforge_user");
     setUser(null);
+    setToken(null);
+
+    localStorage.removeItem("careerforge_user");
+    localStorage.removeItem("careerforge_token");
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        token,
+        isLoggedIn: !!token,
         login,
         register,
         logout,
-        isLoggedIn: !!user,
       }}
     >
       {children}
