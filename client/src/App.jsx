@@ -1,23 +1,73 @@
 import { Routes, Route } from "react-router-dom";
 
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import ResumeBuilder from "./pages/ResumeBuilder";
+import GeneratedResume from "./pages/GeneratedResume";
 
 function App() {
   return (
-    <Routes>
+    <AuthProvider>
+      <Routes>
 
-      <Route path="/" element={<Home />} />
+        {/* =========================
+            PUBLIC ROUTES
+        ========================= */}
 
-      <Route path="/login" element={<Login />} />
+        <Route
+          path="/"
+          element={<Home />}
+        />
 
-      <Route path="/register" element={<Register />} />
+        <Route
+          path="/login"
+          element={<Login />}
+        />
 
-      <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/register"
+          element={<Register />}
+        />
 
-    </Routes>
+
+        {/* =========================
+            PROTECTED ROUTES
+        ========================= */}
+
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/resume-builder"
+          element={
+            <ProtectedRoute>
+              <ResumeBuilder />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/generated-resume"
+          element={
+            <ProtectedRoute>
+              <GeneratedResume />
+            </ProtectedRoute>
+          }
+        />
+
+      </Routes>
+    </AuthProvider>
   );
 }
 
